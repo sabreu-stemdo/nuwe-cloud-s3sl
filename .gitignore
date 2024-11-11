@@ -1,0 +1,11 @@
+.vscode/
+*.pem
+*.ovpn
+*.zip
+*.tfstate
+*.backup
+*.hcl
+.terraform/
+.pytest_cache/
+tfplan
+__pycache__

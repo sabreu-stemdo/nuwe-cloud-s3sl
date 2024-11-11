@@ -1,0 +1,76 @@
+Comandos usados
+
+# crear package para lib de python
+
+pip install \
+--platform manylinux2014_x86_64 \
+--target=package \
+--implementation cp \
+--python-version 3.x \
+--only-binary=:all: --upgrade \
+<lib>
+
+
+############ S3 ############
+
+## Listar bucket de s3
+aws --endpoint-url=http://localhost:4566 s3 ls
+
+
+## Lista fichero del S3
+aws --endpoint-url=http://localhost:4566 s3 ls s3://input-bucket/
+aws --endpoint-url=http://localhost:4566 s3 ls s3://output-bucket/
+
+## Subir fichero al S3
+aws --endpoint-url=http://localhost:4566 s3 cp test_input.csv s3://input-bucket/
+
+## Descargar fichero del S3
+aws --endpoint-url=http://localhost:4566 s3 cp s3://input-bucket/test_input.csv test_input_no_negative.csv
+aws --endpoint-url=http://localhost:4566 s3 cp s3://input-bucket/processed_test_input.csv processed_test_input.csv
+
+aws --endpoint-url=http://localhost:4566 s3 cp s3://output-bucket/processed_test_input.csv .
+
+
+
+## Borrrar fichero al S3
+aws --endpoint-url=http://localhost:4566 s3 rm s3://input-bucket/test_input.csv
+aws --endpoint-url=http://localhost:4566 s3 rm s3://input-bucket/processed_test_input.csv
+aws --endpoint-url=http://localhost:4566 s3 rm s3://output-bucket/processed_test_input.csv
+
+
+############ Lambda ############
+
+# Ejecutar lambda
+aws --endpoint-url=http://localhost:4566 lambda invoke \
+  --function-name ProcessCSVFunction \
+  output-1.json
+
+
+aws --endpoint-url=http://localhost:4566 lambda invoke \
+  --function-name AddColumnFunction \
+  output-2.json
+
+aws --endpoint-url=http://localhost:4566 lambda invoke \
+  --function-name SaveToS3Function \
+  output-3.json
+
+
+############ Step function ############
+
+# Obtener el arn de la stepfunction
+aws --endpoint-url=http://localhost:4566 stepfunctions list-state-machines \
+  --query "stateMachines[?name=='CSVProcessingWorkflow'].stateMachineArn" \
+  --output text
+
+# Ejecutar step funtion 
+aws --endpoint-url=http://localhost:4566 stepfunctions start-execution \
+  --state-machine-arn arn:aws:states:us-east-1:000000000000:stateMachine:CSVProcessingWorkflow \
+  --name "MyExecution1"
+
+# Ver ejecucion
+aws --endpoint-url=http://localhost:4566 stepfunctions list-executions \
+  --state-machine-arn arn:aws:states:us-east-1:000000000000:stateMachine:CSVProcessingWorkflow
+
+# Ver la ejecucion
+aws --endpoint-url=http://localhost:4566 stepfunctions describe-execution \
+  --execution-arn arn:aws:states:us-east-1:000000000000:execution:CSVProcessingStepFunction:MyExecution2
